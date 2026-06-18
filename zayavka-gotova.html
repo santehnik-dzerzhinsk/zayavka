@@ -7,14 +7,15 @@
 
 <!--
   ============================================================
-  НАСТРОЙКА ПЕРЕД ЗАПУСКОМ — поменяй 3 строки ниже (в блоке CONFIG, в самом низу файла):
+  НАСТРОЙКА ПЕРЕД ЗАПУСКОМ — поменяй строки в блоке CONFIG (в самом низу файла):
   1) phone / phoneDisplay — твой номер телефона.
-  2) endpoint — КУДА улетает заявка. Три простых варианта:
-     • Formspree (без программиста): зарегистрируйся на formspree.io,
-       создай форму, вставь сюда её адрес вида https://formspree.io/f/xxxxxxx
-     • n8n (если делает друг-программист): вставь сюда webhook-URL.
-     • Пока не настроил — оставь пусто, форма откроет письмо на почту (mailto).
-  3) email — твоя почта (нужна только для варианта mailto).
+  2) endpoint — КУДА улетает заявка (Make webhook).
+  3) email — твоя почта (нужна только для варианта mailto, если endpoint пустой).
+
+  ВАЖНО: фото больше НЕ отправляется в Make (Make webhook не принимает файлы и
+  заявка с фото падала). Вместо загрузки фото клиенту показывается подсказка —
+  прислать фото после заявки по телефону или в мессенджере. Все текстовые поля
+  (имя, телефон, проблема и т.д.) отправляются как раньше.
   ============================================================
 -->
 
@@ -92,13 +93,25 @@
   .row .field{flex:1;}
   @media (max-width:440px){.row{flex-direction:column;gap:0;}}
 
-  .file{
-    border:1.5px dashed var(--line);border-radius:10px;padding:16px;text-align:center;
-    color:var(--muted);font-size:14px;cursor:pointer;background:#fafdfb;
+  /* Подсказка про фото */
+  .photonote{
+    border:1.5px dashed var(--line);border-radius:10px;padding:14px 16px;
+    color:var(--muted);font-size:13px;background:#fafdfb;
   }
-  .file b{color:var(--green-d);}
-  .file input{display:none;}
-  #fileName{display:block;margin-top:6px;font-size:13px;color:var(--green-d);}
+  .photonote b{color:var(--green-d);}
+
+  /* Кнопки мессенджеров */
+  .msgs{display:flex;gap:10px;}
+  @media (max-width:440px){.msgs{flex-direction:column;}}
+  .msg{
+    flex:1;display:flex;align-items:center;justify-content:center;gap:8px;
+    text-decoration:none;font-weight:700;font-size:15px;color:#fff;
+    padding:13px 14px;border-radius:10px;min-height:50px;
+  }
+  .msg:active{transform:translateY(1px);}
+  .msg-ic{width:20px;height:20px;flex:0 0 auto;}
+  .msg-max{background:linear-gradient(135deg,#4A90E2 0%,#9B59D6 100%);}
+  .msg-tg{background:#229ED9;}
 
   .submit{
     width:100%;border:none;cursor:pointer;background:var(--green);color:#fff;
@@ -202,12 +215,18 @@
     </div>
 
     <div class="field">
-      <label for="photo">Фото проблемы <span class="opt">— необязательно</span></label>
-      <label class="file" for="photo">
-        📷 Перетащите фото сюда или <b>нажмите для выбора</b>
-        <span id="fileName"></span>
-        <input type="file" id="photo" name="photo" accept="image/*">
-      </label>
+      <label>Фото проблемы <span class="opt">— необязательно</span></label>
+      <p class="hint" style="margin:0 0 8px;">Есть фото? Напишите нам — пришлёте его прямо в чат, мастер сразу оценит ситуацию.</p>
+      <div class="msgs">
+        <a class="msg msg-max" href="https://max.ru/u/f9LHodD0cOJq6jJ6oRnigYFD8bYfzOANlcCuO-NkPJJMU5KBGi81k-p5WFQ" target="_blank" rel="noopener">
+          <svg class="msg-ic" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 5h2.6l2.9 8.2L12.4 5H15v14h-2.1V9.3l-2.7 7.4H8.5L5.8 9.3V19H4V5z"/></svg>
+          Написать в MAX
+        </a>
+        <a class="msg msg-tg" href="https://t.me/Renat_52" target="_blank" rel="noopener">
+          <svg class="msg-ic" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M23.07 3.27 1.7 11.52c-1.46.59-1.45 1.4-.27 1.77l5.49 1.71 2.12 6.5c.34.81.85.81 1.52.51l3.4-2.5 5.45 4.02c1 .55 1.72.27 1.97-.93L24.5 5.1c.36-1.46-.55-2.12-1.43-1.83Zm-15.4 11.4 12.4-7.83c.61-.37 1.17-.17.71.24l-10.6 9.57-.41 4.41-2.1-6.39Z"/></svg>
+          Написать в Telegram
+        </a>
+      </div>
     </div>
 
     <input type="hidden" id="source" name="source" value="site">
@@ -232,8 +251,8 @@
   const CONFIG = {
     phone: "+79200055077",            // номер для звонка (без пробелов)
     phoneDisplay: "+7 920 005-50-77", // как показывать номер
-    endpoint: "https://hook.eu1.make.com/lbemhi2sjjzw1cpd91fshmbi144r6ooc",                     // Formspree или n8n webhook. Пусто = письмо на почту (mailto)
-    email: "daviel88888@gmail.com"          // твоя почта (нужна только если endpoint пустой)
+    endpoint: "https://hook.eu1.make.com/lbemhi2sjjzw1cpd91fshmbi144r6ooc", // Make webhook. Пусто = письмо на почту (mailto)
+    email: "daviel88888@gmail.com"    // твоя почта (нужна только если endpoint пустой)
   };
   /* ================================================== */
 
@@ -245,12 +264,6 @@
   const src = new URLSearchParams(location.search).get("source");
   if (src) document.getElementById("source").value = src;
 
-  // Имя выбранного файла
-  document.getElementById("photo").addEventListener("change", e => {
-    const f = e.target.files[0];
-    document.getElementById("fileName").textContent = f ? "Выбрано: " + f.name : "";
-  });
-
   const form = document.getElementById("leadForm");
   const errEl = document.getElementById("formErr");
   const btn = document.getElementById("submitBtn");
@@ -259,23 +272,32 @@
     e.preventDefault();
     const name = document.getElementById("name").value.trim();
     const phoneRaw = document.getElementById("phone").value.replace(/\D/g, "");
-    if (!name || phoneRaw.length < 10) { errEl.style.display = "block"; return; }
+    if (!name || phoneRaw.length < 10) { errEl.textContent = "Проверьте имя и телефон — они обязательны."; errEl.style.display = "block"; return; }
     errEl.style.display = "none";
     btn.disabled = true; btn.textContent = "Отправляем…";
 
+    // Собираем ТОЛЬКО текстовые поля (без файла) — отправляем как обычную форму.
     const data = new FormData(form);
+    const params = new URLSearchParams();
+    for (const [k, v] of data.entries()) {
+      if (k === "photo") continue;       // фото не отправляем
+      params.append(k, v);
+    }
 
     // Вариант без бэкенда: открыть письмо
     if (!CONFIG.endpoint) {
-      const body = [...data.entries()].filter(([k]) => k !== "photo")
-        .map(([k, v]) => k + ": " + v).join("%0D%0A");
+      const body = [...params.entries()].map(([k, v]) => k + ": " + v).join("%0D%0A");
       location.href = "mailto:" + CONFIG.email + "?subject=Заявка с сайта&body=" + body;
       showDone(); return;
     }
 
-    // Вариант с endpoint (Formspree / n8n)
+    // Вариант с endpoint (Make webhook) — шлём обычные поля, без файла
     try {
-      const res = await fetch(CONFIG.endpoint, { method: "POST", body: data, headers: { "Accept": "application/json" } });
+      const res = await fetch(CONFIG.endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded", "Accept": "application/json" },
+        body: params.toString()
+      });
       if (res.ok) { showDone(); }
       else throw new Error();
     } catch (_) {
